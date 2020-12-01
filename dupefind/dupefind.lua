@@ -87,6 +87,7 @@ function preferences()
 
 	ignore_rare = true
 	ignore_ex = true
+    ignore_cannotsendpol = true  -- ignores 'Can Send POL' == false
 	ignore_nostack = true
 	
 	player_only = true
@@ -121,7 +122,8 @@ function work(...)
 	args = {...}    
 	
 	local ignore_rare = get_flag(args, 'rare', ignore_rare) -- where `settings` is the global settings table
-	local ignore_ex = get_flag(args, 'ex', ignore_ex)
+    local ignore_ex = get_flag(args, 'ex', ignore_ex)
+    local ignore_cannotsendpol = get_flag(args, 'csp', ignore_cannotsendpol) -- results will include items not sendable to same pol
 	local ignore_nostack = get_flag(args, 'nostack', ignore_nostack)
 	local player_only = get_flag(args, 'findall', player_only)
 	local filter_by_player = get_flag(args, 'nofilter', filter_by_player)
@@ -175,7 +177,9 @@ function work(...)
 						if res.items[id] and (not ignore_ids:contains(id))
 							and (IsStackable(id) or not ignore_nostack)
 							and (not IsRare(id) or not ignore_rare)
-							and ((not IsExclusive(id) or CanSendPol(id)) or not ignore_ex) 
+                            -- This can only evaluate to false under one set of conditions
+                            --  IsExclusive + not CanSendPol + ignore_cannotsendpol + ignore_ex
+                            and ((not IsExclusive(id) or (CanSendPol(id) or not ignore_cannotsendpol)) or not ignore_ex)
 						then
 							--player str, bag str, id int, count int
 							location = (player_only and bag or character..': '..bag)
