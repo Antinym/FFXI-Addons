@@ -82,16 +82,16 @@ res = require('resources')
 lang = windower.ffxi.get_info().language:lower()
 
 function preferences()
-	ignore_items = S{ 'linkshell', 'linkpearl' }
-	ignore_players = S{ 'Freonski','Cromechu','Ariasan','Muljn','Mulka','Miavi','Tuavi' }
+    ignore_items = S{ 'linkshell', 'linkpearl' }
+    ignore_players = S{ 'Freonski','Cromechu','Ariasan','Muljn','Mulka','Miavi','Tuavi' }
 
-	ignore_rare = true
-	ignore_ex = true
+    ignore_rare = true
+    ignore_ex = true
     ignore_cannotsendpol = true  -- ignores 'Can Send POL' == false
-	ignore_nostack = true
-	
-	player_only = true
-	filter_by_player = true
+    ignore_nostack = true
+    
+    player_only = true
+    filter_by_player = true
 end
 
 bags = S{'safe','safe2','storage','locker','inventory','satchel','sack','case','wardrobe','wardrobe2','wardrobe3','wardrobe4'}
@@ -101,9 +101,9 @@ preferences()
 
 ignore_items = ignore_items:map(string.lower)
 ignore_ids = res.items:filter(function(item) 
-		return ignore_items:contains(item.name:lower()) or ignore_items:contains(item.name_log:lower()) 
-	end):keyset()
-	
+        return ignore_items:contains(item.name:lower()) or ignore_items:contains(item.name_log:lower()) 
+    end):keyset()
+    
 local get_flag = function(args, flag, default)
     for _, arg in ipairs(args) do
         if arg == flag then
@@ -119,106 +119,106 @@ function IsExclusive(id) return S(res.items[id].flags):contains('Exclusive') or 
 function IsStackable(id) return res.items[id].stack > 1 end
 
 function work(...)
-	args = {...}    
-	
-	local ignore_rare = get_flag(args, 'rare', ignore_rare) -- where `settings` is the global settings table
+    args = {...}    
+    
+    local ignore_rare = get_flag(args, 'rare', ignore_rare) -- where `settings` is the global settings table
     local ignore_ex = get_flag(args, 'ex', ignore_ex)
     local ignore_cannotsendpol = get_flag(args, 'csp', ignore_cannotsendpol) -- results will include items not sendable to same pol
-	local ignore_nostack = get_flag(args, 'nostack', ignore_nostack)
-	local player_only = get_flag(args, 'findall', player_only)
-	local filter_by_player = get_flag(args, 'nofilter', filter_by_player)
-	
-	local player = windower.ffxi.get_player().name
-	local inventory = windower.ffxi.get_items()
-	local storages = {}
-	
-	storages[player] = {}
-	
-	local haystack = {}
-	local results = 0
+    local ignore_nostack = get_flag(args, 'nostack', ignore_nostack)
+    local player_only = get_flag(args, 'findall', player_only)
+    local filter_by_player = get_flag(args, 'nofilter', filter_by_player)
+    
+    local player = windower.ffxi.get_player().name
+    local inventory = windower.ffxi.get_items()
+    local storages = {}
+    
+    storages[player] = {}
+    
+    local haystack = {}
+    local results = 0
 
-	-- flatten inventory
-	--Shamelessly stolen from findAll. Many thanks to Zohno.	
-	for bag,_ in pairs(bags:keyset()) do 
+    -- flatten inventory
+    --Shamelessly stolen from findAll. Many thanks to Zohno.	
+    for bag,_ in pairs(bags:keyset()) do 
         storages[player][bag] = T{}
-		for i = 1, inventory[bag].max do
-			data = inventory[bag][i]
-			if data.id ~= 0 then
-				local id = data.id
-				storages[player][bag][id] = (storages[player][bag][id] or 0) + data.count
-			end
+        for i = 1, inventory[bag].max do
+            data = inventory[bag][i]
+            if data.id ~= 0 then
+                local id = data.id
+                storages[player][bag][id] = (storages[player][bag][id] or 0) + data.count
+            end
         end
     end
-	
-	-- get offline storages from findAll if available. This code is also lifted almost verbatim from findAll.
-	if not player_only then
-		local findall_data = windower.get_dir(windower.addon_path..'..\\findall\\data')
-		if findall_data then
-			for _,f in pairs(findall_data) do
-				if f:sub(-4) == '.lua' and f:sub(1,-5) ~= player then
-					local success,result = pcall(dofile,windower.addon_path..'..\\findall\\data\\'..f)
-					if success then
-						storages[f:sub(1,-5)] = result
-					else
-						warning('Unable to retrieve updated item storage for %s.':format(f:sub(1,-5)))
-					end
-				end
-			end
-		end
-	end
-	
-	for character,inventory in pairs(storages) do
-		if not ignore_players:contains(character) then
-			for bag,items in pairs(inventory) do
-				if bags:contains(bag) then
-					for id, count in pairs(items) do
-						id = tonumber(id)
-						--if item is valid, stackable, not ignored, not rare, not Exclusive
-						if res.items[id] and (not ignore_ids:contains(id))
-							and (IsStackable(id) or not ignore_nostack)
-							and (not IsRare(id) or not ignore_rare)
+    
+    -- get offline storages from findAll if available. This code is also lifted almost verbatim from findAll.
+    if not player_only then
+        local findall_data = windower.get_dir(windower.addon_path..'..\\findall\\data')
+        if findall_data then
+            for _,f in pairs(findall_data) do
+                if f:sub(-4) == '.lua' and f:sub(1,-5) ~= player then
+                    local success,result = pcall(dofile,windower.addon_path..'..\\findall\\data\\'..f)
+                    if success then
+                        storages[f:sub(1,-5)] = result
+                    else
+                        warning('Unable to retrieve updated item storage for %s.':format(f:sub(1,-5)))
+                    end
+                end
+            end
+        end
+    end
+    
+    for character,inventory in pairs(storages) do
+        if not ignore_players:contains(character) then
+            for bag,items in pairs(inventory) do
+                if bags:contains(bag) then
+                    for id, count in pairs(items) do
+                        id = tonumber(id)
+                        --if item is valid, stackable, not ignored, not rare, not Exclusive
+                        if res.items[id] and (not ignore_ids:contains(id))
+                            and (IsStackable(id) or not ignore_nostack)
+                            and (not IsRare(id) or not ignore_rare)
                             -- This can only evaluate to false under one set of conditions
                             --  IsExclusive + not CanSendPol + ignore_cannotsendpol + ignore_ex
                             and ((not IsExclusive(id) or (CanSendPol(id) or not ignore_cannotsendpol)) or not ignore_ex)
-						then
-							--player str, bag str, id int, count int
-							location = (player_only and bag or character..': '..bag)
-							if not haystack[id] then haystack[id] = {} end
-							haystack[id][location] = count
-						end
-					end
-				end
-			end
-		end
-	end
+                        then
+                            --player str, bag str, id int, count int
+                            location = (player_only and bag or character..': '..bag)
+                            if not haystack[id] then haystack[id] = {} end
+                            haystack[id][location] = count
+                        end
+                    end
+                end
+            end
+        end
+    end
 
-	--print duplicates
-	for id,locations in pairs(haystack) do
-		if table.length(locations) > 1 then
-			results = results +1
-			log(res.items[id].name,'found in:')
-			for location,count in pairs(locations) do
-				log('\t',location,count)
-			end
-		end
-	end
-	
-	if results >= 1 then
-		log(results,'found.')
-	else
-		log('No duplicates found. Congratulations!')
-	end
-	
-	preferences()
+    --print duplicates
+    for id,locations in pairs(haystack) do
+        if table.length(locations) > 1 then
+            results = results +1
+            log(res.items[id].name,'found in:')
+            for location,count in pairs(locations) do
+                log('\t',location,count)
+            end
+        end
+    end
+    
+    if results >= 1 then
+        log(results,'found.')
+    else
+        log('No duplicates found. Congratulations!')
+    end
+    
+    preferences()
 end
 
 function handle_commands(...)
-	args = {...}
-	if args[1] == 'r' then -- shorthand for easy reloading
-		windower.send_command('lua r '.._addon.name)
-	else
-		work(...)
-	end
+    args = {...}
+    if args[1] == 'r' then -- shorthand for easy reloading
+        windower.send_command('lua r '.._addon.name)
+    else
+        work(...)
+    end
 end
 
 windower.register_event('addon command',handle_commands)
